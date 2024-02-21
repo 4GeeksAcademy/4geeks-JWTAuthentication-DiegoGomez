@@ -16,12 +16,17 @@ const Signup = () => {
         },
         body: JSON.stringify({ email, password }),
       });
-      
+
       if (response.ok) {
         window.location.href = "/login";
       } else {
-        const data = await response.json();
-        console.error("Signup failed:", data.message);
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          const data = await response.json();
+          console.error("Signup failed:", data.message);
+        } else {
+          console.error("Signup failed:", response.statusText);
+        }
       }
     } catch (error) {
       console.error("Error during signup:", error);

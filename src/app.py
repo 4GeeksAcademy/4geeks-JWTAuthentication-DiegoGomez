@@ -1,25 +1,33 @@
-"""
-This module takes care of starting the API Server, Loading the DB and Adding the endpoints
-"""
 import os
-from flask import Flask, request, jsonify, url_for, send_from_directory
+from flask import Flask, request, jsonify, url_for, send_from_directory, session, redirect
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from api.utils import APIException, generate_sitemap
-from api.models import db
+from api.models import db, User
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
+from flask_cors import CORS
+from werkzeug.security import check_password_hash
+from functools import wraps
 
-# from models import Person
-
-ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
-static_file_dir = os.path.join(os.path.dirname(
-    os.path.realpath(__file__)), '../public/')
+# Configura la aplicación Flask
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 
-# database condiguration
+# Configuración de CORS manualmente
+def add_cors_headers(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Headers'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = '*'
+    return response
+
+# Aplica el decorador after_request
+@app.after_request
+def after_request(response):
+    return add_cors_headers(response)
+
+# database configuration
 db_url = os.getenv("DATABASE_URL")
 if db_url is not None:
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace(
@@ -41,25 +49,20 @@ setup_commands(app)
 app.register_blueprint(api, url_prefix='/api')
 
 # Handle/serialize errors like a JSON object
-
-
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
 
 # generate sitemap with all your endpoints
-
-
 @app.route('/')
 def sitemap():
     if ENV == "development":
         return generate_sitemap(app)
     return send_from_directory(static_file_dir, 'index.html')
 
-# any other endpoint will try to serve it like a static file
-
 # Decorador para verificar si el usuario está autenticado
 def login_required(f):
+    @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
             return redirect('/login')
@@ -83,7 +86,7 @@ def signup():
     db.session.add(new_user)
     db.session.commit()
 
-    return redirect('/login')
+    return jsonify({'message': 'Signup successful'}), 201
 
 # Endpoint para el inicio de sesión
 @app.route('/login', methods=['POST'])
@@ -98,7 +101,7 @@ def login():
     # Verifica si el usuario existe y si la contraseña es correcta
     if user and check_password_hash(user.password, password):
         # Autenticación exitosa, redirecciona al dashboard privado
-        return redirect('/private')
+        return jsonify({'message': 'Login successful'}), 200
 
     # Autenticación fallida, retorna un mensaje de error
     return jsonify({'message': 'Invalid email or password'}), 401

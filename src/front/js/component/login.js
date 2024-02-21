@@ -9,7 +9,7 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch("/login", {
+      const response = await fetch("https://bookish-winner-rvqw75g9wj52wxr6-3001.app.github.dev/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
