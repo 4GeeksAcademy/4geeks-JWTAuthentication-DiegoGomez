@@ -1,12 +1,17 @@
+<<<<<<< HEAD
 import React, { useContext } from "react";
 import { Context } from "../store/appContext";
 import rigoImageUrl from "../../img/rigo-baby.jpg";
 import "../../styles/home.scss";
 import { Link } from "react-router-dom";
+=======
+// Home.js
+>>>>>>> 38adc73d17cd1437e82c3fbc8e1353c474f2577d
 
-export const Home = () => {
-	const { store, actions } = useContext(Context);
+import React from "react";
+import { Link } from "react-router-dom";
 
+<<<<<<< HEAD
 	return (
 		<div className="text-center mt-5">
 			<h1>Hello Rigo!</h1>
@@ -22,4 +27,37 @@ export const Home = () => {
 			</p>
 		</div>
 	);
+=======
+const Home = () => {
+  return (
+    <div className="text-center mt-5 text-white">
+      <h1 className="display-5">Authentication JWT Diego Gomez</h1>
+      <div className="d-flex justify-content-center mt-3">
+        <Link to="/signup" className="text-decoration-none">
+          <div className="card m-2" style={{ width: "18rem" }}>
+            <div className="card-body">
+              <h5 className="card-title">Signup</h5>
+            </div>
+          </div>
+        </Link>
+        <Link to="/login" className="text-decoration-none">
+          <div className="card m-2" style={{ width: "18rem" }}>
+            <div className="card-body">
+              <h5 className="card-title">Login</h5>
+            </div>
+          </div>
+        </Link>
+        <Link to="/private" className="text-decoration-none">
+          <div className="card m-2" style={{ width: "18rem" }}>
+            <div className="card-body">
+              <h5 className="card-title">Private</h5>
+            </div>
+          </div>
+        </Link>
+      </div>
+    </div>
+  );
+>>>>>>> 38adc73d17cd1437e82c3fbc8e1353c474f2577d
 };
+
+export default Home;
