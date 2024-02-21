@@ -15,17 +15,8 @@ from functools import wraps
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 
-# Configuración de CORS manualmente
-def add_cors_headers(response):
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Headers'] = '*'
-    response.headers['Access-Control-Allow-Methods'] = '*'
-    return response
-
-# Aplica el decorador after_request
-@app.after_request
-def after_request(response):
-    return add_cors_headers(response)
+# Configuración de CORS para permitir solo solicitudes desde el mismo dominio
+CORS(app, origins="https://bookish-winner-rvqw75g9wj52wxr6-3000.app.github.dev")
 
 # database configuration
 db_url = os.getenv("DATABASE_URL")
