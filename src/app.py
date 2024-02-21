@@ -58,6 +58,56 @@ def sitemap():
 
 # any other endpoint will try to serve it like a static file
 
+# Decorador para verificar si el usuario está autenticado
+def login_required(f):
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            return redirect('/login')
+        return f(*args, **kwargs)
+    return decorated_function
+
+# Endpoint para el registro de usuarios
+@app.route('/signup', methods=['POST'])
+def signup():
+    data = request.json
+    email = data.get('email')
+    password = data.get('password')
+
+    # Verifica si el usuario ya existe en la base de datos
+    existing_user = User.query.filter_by(email=email).first()
+    if existing_user:
+        return jsonify({'message': 'Email already exists'}), 400
+
+    # Crea un nuevo usuario
+    new_user = User(email=email, password=password)
+    db.session.add(new_user)
+    db.session.commit()
+
+    return redirect('/login')
+
+# Endpoint para el inicio de sesión
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.json
+    email = data.get('email')
+    password = data.get('password')
+
+    # Busca el usuario en la base de datos por correo electrónico
+    user = User.query.filter_by(email=email).first()
+
+    # Verifica si el usuario existe y si la contraseña es correcta
+    if user and check_password_hash(user.password, password):
+        # Autenticación exitosa, redirecciona al dashboard privado
+        return redirect('/private')
+
+    # Autenticación fallida, retorna un mensaje de error
+    return jsonify({'message': 'Invalid email or password'}), 401
+
+# Endpoint para la página privada
+@app.route('/private')
+@login_required
+def private():
+    return "Welcome to the private dashboard!"
 
 @app.route('/<path:path>', methods=['GET'])
 def serve_any_other_file(path):
@@ -67,6 +117,12 @@ def serve_any_other_file(path):
     response.cache_control.max_age = 0  # avoid cache memory
     return response
 
+# Endpoint para el logout
+@app.route('/logout')
+def logout():
+    # Elimina la sesión del usuario
+    session.pop('user_id', None)
+    return redirect('/login')
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
